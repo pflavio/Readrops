@@ -55,6 +55,9 @@ class ItemWebView(
         backgroundColor: Color,
         onBackgroundColor: Color
     ) {
+        // Match the page while HTML is loading instead of flashing WebView white.
+        setBackgroundColor(backgroundColor.toArgb())
+
         val direction = if (Locale.getDefault().layoutDirection == LAYOUT_DIRECTION_LTR) {
             "ltr"
         } else {

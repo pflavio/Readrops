@@ -73,6 +73,7 @@
     <string name="theme">Theme</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
+    <string name="oled_black">OLED black</string>
     <string name="new_feed">New feed</string>
     <string name="auto_synchro">Automatic synchronisation</string>
     <string name="manual">Manual</string>

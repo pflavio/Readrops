@@ -1,7 +1,6 @@
 package com.readrops.app
 
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -9,6 +8,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,11 +37,11 @@ import com.readrops.app.repositories.BaseRepository
 import com.readrops.app.sync.SyncWorker
 import com.readrops.app.timelime.TimelineTab
 import com.readrops.app.util.Preferences
+import com.readrops.app.util.theme.AppTheme
 import com.readrops.app.util.theme.ReadropsTheme
 import com.readrops.db.Database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -66,31 +67,36 @@ class MainActivity : ComponentActivity(), KoinComponent {
 
         val preferences = get<Preferences>()
 
-        val darkFlag = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        val initialUseDarkTheme = runBlocking {
-            useDarkTheme(preferences.theme.flow.first(), darkFlag)
-        }
+        val initialTheme = runBlocking { preferences.theme.flow.first() }
 
         setContent {
             KoinAndroidContext {
-                val useDarkTheme by preferences.theme.flow
-                    .map { mode -> useDarkTheme(mode, darkFlag) }
-                    .collectAsState(initial = initialUseDarkTheme)
+                val themePreference by preferences.theme.flow.collectAsState(initial = initialTheme)
+                val theme = AppTheme.fromPreference(themePreference)
+                val useDarkTheme = theme.isDark(isSystemInDarkTheme())
 
                 ReadropsTheme(
-                    useDarkTheme = useDarkTheme
+                    useDarkTheme = useDarkTheme,
+                    useOledTheme = theme == AppTheme.OLED
                 ) {
-                    enableEdgeToEdge(
-                        statusBarStyle = SystemBarStyle.auto(
-                            lightScrim = Color.TRANSPARENT,
-                            darkScrim = Color.TRANSPARENT,
-                            detectDarkMode = { useDarkTheme }
-                        ),
-                        navigationBarStyle = SystemBarStyle.light(
-                            scrim = BottomAppBarDefaults.containerColor.toArgb(),
-                            darkScrim = BottomAppBarDefaults.containerColor.toArgb()
+                    val navigationBarColor = BottomAppBarDefaults.containerColor.toArgb()
+                    SideEffect {
+                        enableEdgeToEdge(
+                            statusBarStyle = SystemBarStyle.auto(
+                                lightScrim = Color.TRANSPARENT,
+                                darkScrim = Color.TRANSPARENT,
+                                detectDarkMode = { useDarkTheme }
+                            ),
+                            navigationBarStyle = if (useDarkTheme) {
+                                SystemBarStyle.dark(scrim = navigationBarColor)
+                            } else {
+                                SystemBarStyle.light(
+                                    scrim = navigationBarColor,
+                                    darkScrim = navigationBarColor
+                                )
+                            }
                         )
-                    )
+                    }
 
                     Navigator(
                         screen = if (accountExists) HomeScreen else AccountSelectionScreen(),
@@ -160,14 +166,6 @@ class MainActivity : ComponentActivity(), KoinComponent {
             intent.action != null && intent.action == Intent.ACTION_SEND -> {
                 HomeScreen.openAddFeedDialog(intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty())
             }
-        }
-    }
-
-    private fun useDarkTheme(mode: String, darkFlag: Int): Boolean {
-        return when (mode) {
-            "light" -> false
-            "dark" -> true
-            else -> darkFlag == Configuration.UI_MODE_NIGHT_YES
         }
     }
 }

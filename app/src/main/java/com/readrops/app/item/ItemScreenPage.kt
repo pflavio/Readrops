@@ -57,7 +57,9 @@ fun ItemScreenPage(
     val accentColor = itemWithFeed.displayColor(MaterialTheme.colorScheme.background.toArgb())
 
     val nestedScrollConnection = rememberBottomBarNestedScrollConnection()
-    var refreshAndroidView by remember { mutableStateOf(true) }
+    var refreshAndroidView by remember(accentColor, backgroundColor, onBackgroundColor) {
+        mutableStateOf(true)
+    }
     var isScrollable by remember { mutableStateOf(true) }
 
     Scaffold(

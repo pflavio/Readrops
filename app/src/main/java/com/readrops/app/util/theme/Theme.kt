@@ -1,10 +1,12 @@
 package com.readrops.app.util.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 
 private val lightScheme = lightColorScheme(
@@ -83,19 +85,44 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+// Keep the large reading and navigation surfaces truly black, including elevated
+// surfaces. Raised dialogs retain a little contrast against the page behind them.
+private val oledScheme = darkScheme.copy(
+    background = Color.Black,
+    onBackground = Color(0xFFE6E6E6),
+    surface = Color.Black,
+    onSurface = Color(0xFFE6E6E6),
+    surfaceVariant = Color.Black,
+    onSurfaceVariant = Color(0xFFC6C6C6),
+    surfaceTint = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceBright = Color(0xFF242424),
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color.Black,
+    surfaceContainer = Color.Black,
+    surfaceContainerHigh = Color(0xFF141414),
+    surfaceContainerHighest = Color.Black,
+    outline = Color(0xFF909090),
+    outlineVariant = Color(0xFF404040),
+    inverseSurface = Color(0xFFE6E6E6),
+    inverseOnSurface = Color(0xFF1A1A1A),
+)
+
+internal fun readropsColorScheme(useDarkTheme: Boolean, useOledTheme: Boolean): ColorScheme =
+    when {
+        useOledTheme -> oledScheme
+        useDarkTheme -> darkScheme
+        else -> lightScheme
+    }
+
 @Composable
 fun ReadropsTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
+    useOledTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colors = if (!useDarkTheme) {
-        lightScheme
-    } else {
-        darkScheme
-    }
-
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = readropsColorScheme(useDarkTheme, useOledTheme),
         content = content
     )
 }

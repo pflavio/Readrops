@@ -43,6 +43,7 @@ import com.readrops.app.sync.SyncWorker
 import com.readrops.app.timelime.components.SwipeAction
 import com.readrops.app.util.components.AndroidScreen
 import com.readrops.app.util.components.CenteredProgressIndicator
+import com.readrops.app.util.theme.AppTheme
 import kotlinx.coroutines.launch
 
 
@@ -102,9 +103,10 @@ class PreferencesScreen : AndroidScreen() {
                                 preference = loadedState.themePref.second,
                                 selectedKey = loadedState.themePref.first,
                                 entries = mapOf(
-                                    "light" to stringResource(id = R.string.light),
-                                    "dark" to stringResource(id = R.string.dark),
-                                    "system" to stringResource(id = R.string.system)
+                                    AppTheme.LIGHT.preferenceValue to stringResource(id = R.string.light),
+                                    AppTheme.DARK.preferenceValue to stringResource(id = R.string.dark),
+                                    AppTheme.OLED.preferenceValue to stringResource(id = R.string.oled_black),
+                                    AppTheme.SYSTEM.preferenceValue to stringResource(id = R.string.system)
                                 ),
                                 title = stringResource(id = R.string.theme),
                                 onValueChange = {}
